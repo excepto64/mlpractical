@@ -200,15 +200,17 @@ class MetOfficeDataProvider(DataProvider):
         #TODO: normalise data to zero mean, unit standard deviation
         vals_norm = (vals_filtered - np.mean(vals_filtered))/np.std(vals_filtered)  
         #TODO: convert from flat sequence to windowed data
-        num_samples = len(vals_norm) // window_size
-        total_days = window_size * num_samples
-        vals_window = vals_norm[0:total_days].reshape((num_samples, window_size))
+
+        num_samples = len(vals_norm) - window_size
+        windowed = np.zeros((num_samples, window_size))
+        for i in range(num_samples):
+            windowed[i] = vals_norm[i : i + window_size]
 
         #TODO: separate into inputs and targets
         # inputs are the first (window_size - 1) entries in windows
-        inputs = vals_window[:, 0:window_size - 1]
+        inputs = windowed[:, 0:window_size - 1]
         # targets are the last entries in windows
-        targets = vals_window[:, -1]
+        targets = windowed[:, -1]
         
         # initialise base class with inputs and targets arrays (uncomment below)
         super(MetOfficeDataProvider, self).__init__(
